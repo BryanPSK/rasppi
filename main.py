@@ -1,20 +1,30 @@
-# c:/Users/bryan/Desktop/rasppi/venv/Scripts/Activate.ps1/Scripts/Activate.ps1
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+# import json
 import time
 import threading
 import datetime
+import concurrent.futures
+import logging
+import RPi.GPIO as GPIO
+# import time
+#
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.OUT)
+GPIO.setup(25, GPIO.IN)
 
-# Use the application default credentials
-cred = credentials.Certificate('ServiceAccountKey.json')
+
+# creds = open('ServiceAccountKey.json')
+# # Use the application default credentials
+cred = credentials.Certificate("ServiceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 # $env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\bryan\Desktop\rasppi\ServiceAccountKey.json" (code for initial setting path)
-# from google.cloud import firestore
+#from google.cloud import firestore
 db = firestore.client()
-
-
+doc_ref = db.collection(u'users2').document(u'alovelace')
 # doc_ref1 = db.collection('users4bryanlaptop').document('alovelace')
 # doc_ref1.set({
 #     'born': 1815,
@@ -62,6 +72,13 @@ def on_snapshot(doc_snapshot, changes, read_time):
     callback_done.set()
 
 
+if __name__ == "__main__":
+    format = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=format, level=logging.INFO,
+                        datefmt="%H:%M:%S")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        executor.map(on_snapshot, range(1))
 # doc_watch = doc_ref2pm.on_snapshot(on_snapshot)
 
 
@@ -75,22 +92,86 @@ def on_snapshot(doc_snapshot, changes, read_time):
 while True:
     time.sleep(1)
     timenow = datetime.datetime.now()
-    hournow = timenow.hour
+    interim = timenow.minute - 34
+    hournow = interim
+    if (threading.active_count() >= 10):
+        threading.thread.terminate()
 
-    if (hournow in range(13, 14)):
-        doc_watch = doc_ref1pm.on_snapshot(on_snapshot)
-        print('1pmto2pm')
-        print(boolvalue)
-    elif (hournow in range(14, 15)):
-        doc_watch = doc_ref2pm.on_snapshot(on_snapshot)
-        print('2pmto3pm')
-    elif(hournow in range(17, 18)):
-        doc_watch = doc_ref5pm.on_snapshot(on_snapshot)
-        print('5pm to6pm')
-        print(boolvalue)
-    elif(hournow in range(18, 19)):
-        doc_watch = doc_ref6pm.on_snapshot(on_snapshot)
-        print('6pm to 7pm')
-        print(boolvalue)
-    else:
-        print("machine not available for booking")
+        if (hournow == 13):
+            doc_watch = doc_ref1pm.on_snapshot(on_snapshot)
+            if boolvalue == True:
+                GPIO.output(18, True)
+                print('1pm to 2pm')
+                print(boolvalue)
+            if boolvalue == False:
+                GPIO.output(18, False)
+                print('1pm to 2pm')
+                print(boolvalue)
+        elif (hournow == 14):
+            doc_watch = doc_ref2pm.on_snapshot(on_snapshot)
+            if boolvalue == True:
+                GPIO.output(18, True)
+                print('2pm to 3pm')
+                print(boolvalue)
+            if boolvalue == False:
+                GPIO.output(18, False)
+
+                print('2pm to 3pm')
+                print(boolvalue)
+        elif (hournow == 15):
+            doc_watch = doc_ref3pm.on_snapshot(on_snapshot)
+            if boolvalue == True:
+                GPIO.output(18, True)
+
+                print('3pm to 4pm')
+                print(boolvalue)
+            if boolvalue == False:
+                GPIO.output(18, False)
+
+                print('3pm to 4pm')
+                print(boolvalue)
+        elif (hournow == 16):
+            doc_watch = doc_ref4pm.on_snapshot(on_snapshot)
+            if boolvalue == True:
+                GPIO.output(18, True)
+
+                print('4pm to 5pm')
+                print(boolvalue)
+            if boolvalue == False:
+                GPIO.output(18, False)
+
+                print('4pm to 5pm')
+                print(boolvalue)
+        elif(hournow == 17):
+            doc_watch = doc_ref5pm.on_snapshot(on_snapshot)
+            if boolvalue == True:
+                GPIO.output(18, True)
+
+                print('5pm to 6pm')
+                print(boolvalue)
+            if boolvalue == False:
+                GPIO.output(18, False)
+
+                print('5pm to 6pm')
+                print(boolvalue)
+        elif(hournow == 18):
+            doc_watch = doc_ref6pm.on_snapshot(on_snapshot)
+            if boolvalue == True:
+                GPIO.output(18, True)
+
+                print('6pm to 7pm')
+                print(boolvalue)
+            if boolvalue == False:
+                GPIO.output(18, False)
+
+                print('6pm to 7pm')
+                print(boolvalue)
+        else:
+            print("machine not available for booking")
+
+
+# while True:
+# 	if GPIO.input(25) :
+# 		GPIO.output(18, False)
+# 	else:
+# 		GPIO.output(18, True)
